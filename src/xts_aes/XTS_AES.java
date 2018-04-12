@@ -9,6 +9,7 @@ import java.io.*;
  *
  * @author AW
  */
+
 class XTS_AES {
 
     /**
@@ -19,7 +20,7 @@ class XTS_AES {
     private String CIPHER_FILE;
     private static int BLOCK_SIZE = 16;                     //128-bits (16-bytes)
     private static int KEY_LENGTH_HEX = 64;                 //256-bits (32-bytes)
-//    private static byte[] nonce = Util.hex2byte("12345678901234567890123456789012");
+    private static byte[] nonce = Util.hex2byte("12345678901234567890123456789012");
     // Constructor dari kelas XTSAES
     
     public XTS_AES(String plain, String key, String cipher) {
@@ -41,12 +42,30 @@ class XTS_AES {
         String key2 = read.substring(KEY_LENGTH_HEX / 2, read.length());
         System.out.println("key1\t= " + key1);
         System.out.println("key2\t= " + key2);
-        //System.out.println("tweak\t= " + Util.toHEX1(nonce));
+        System.out.println("tweak\t= " + Util.toHEX1(nonce));
 
         // pemanggilan method XTSAESEncrypt untuk melakukan enkripsi
-        // XTSAESEncrypt(raf1, raf2, Util.hex2byte(key1), Util.hex2byte(key2), nonce);
+        Encrypt(raf1, raf2, Util.hex2byte(key1), Util.hex2byte(key2), nonce);
         raf1.close();
         raf2.close();
         System.out.println("Encryption Done!");
+    }
+    
+    public void Encrypt(RandomAccessFile fin, RandomAccessFile fout,
+            byte[] key1, byte[] key2, byte[] i)throws Exception {
+        long fileSize = fin.length();
+        System.out.println("finlength\t= " + fileSize);
+        int m = (int) (fileSize / BLOCK_SIZE);
+        int b = (int) (fileSize % BLOCK_SIZE);
+        
+        // define a buffer for input and output
+        byte[][] bufferIn = new byte[m + 1][16];
+        bufferIn[m] = new byte[b];
+        byte[][] bufferOut = new byte[m + 1][16];
+        bufferOut[m] = new byte[b];
+
+        for (int a = 0; a < bufferIn.length; a++) {
+            fin.read(bufferIn[a]);
+        }
     }
 }
