@@ -5,6 +5,10 @@
  */
 package xts_aes;
 
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author humam
@@ -16,6 +20,40 @@ public class Decrypt extends javax.swing.JPanel {
      */
     public Decrypt() {
         initComponents();
+    }
+    
+    public static void main(String args[]) {
+        System.out.println("Decryption Start!");
+        String sourceField, keyField, targetField;
+        String sourceName, keyName, targetName;
+        sourceField = "D:/data_enkripsi/decTreeAdult.encrypted";
+        keyField = "D:/data_enkripsi/key.txt";
+        //targetField = "D:/LMS/mik/cis/tugas/XTS_AES/src/xts_aes/cobaMatrixDecrypt.py";
+        sourceName = sourceField;
+        keyName = keyField;
+        //targetName = targetField;
+        
+        try {
+            //String basename = FilenameUtils.getBaseName(sourceField)+"_decrypted";
+            
+            targetName = sourceField.substring(0, sourceField.lastIndexOf("."));
+            targetName = targetName.concat(".decrypted");
+            
+            System.out.println("Saved in "+targetName);
+            
+            targetField = targetName;
+            // Use relative path for Unix systems
+            File f = new File(targetField);
+            f.getParentFile().mkdirs(); 
+            f.createNewFile();
+            
+            XTS_AES aes = new XTS_AES(sourceName, keyName, targetName);
+            aes.startDecryption(sourceName, keyName, targetName);
+            
+        }catch(Exception ex) {
+            Logger.getLogger(Decrypt.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            
     }
 
     /**

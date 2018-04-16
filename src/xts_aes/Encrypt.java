@@ -47,7 +47,7 @@ public class Encrypt extends javax.swing.JPanel {
         System.out.println("Encryption Start!");
         String sourceField, keyField, targetField;
         String sourceName, keyName, targetName;
-        sourceField = "D:/data_enkripsi/cobaMatrix.py";
+        sourceField = "D:/data_enkripsi/decTreeAdult.png";
         keyField = "D:/data_enkripsi/key.txt";
         //targetField = "D:/LMS/mik/cis/tugas/XTS_AES/src/xts_aes/cobaMatrixDecrypt.py";
         sourceName = sourceField;
@@ -58,7 +58,7 @@ public class Encrypt extends javax.swing.JPanel {
             //String basename = FilenameUtils.getBaseName(sourceField)+"_decrypted";
             
             targetName = sourceField.substring(0, sourceField.lastIndexOf("."));
-            targetName = targetName.concat("_decrypted");
+            targetName = targetName.concat(".encrypted");
             System.out.println("Saved in "+targetName);
             targetField = targetName;
             // Use relative path for Unix systems
@@ -66,9 +66,10 @@ public class Encrypt extends javax.swing.JPanel {
 
             f.getParentFile().mkdirs(); 
             f.createNewFile();
-            targetName = targetField;
+           
             XTS_AES aes = new XTS_AES(sourceName, keyName, targetName);
             aes.startEncryption(sourceName, keyName, targetName);
+            
         }catch(Exception ex) {
             Logger.getLogger(Encrypt.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -78,3 +79,5 @@ public class Encrypt extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 }
+
+
