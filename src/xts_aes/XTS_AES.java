@@ -86,20 +86,60 @@ class XTS_AES {
         //
         buildTable(nonceDP, m + 1);
         
-//        Thread[] worker = new Thread[NUMBER_OF_THREAD];
-//        for (int a = 0; a <= m - 2; a++) {
-//            worker[a % NUMBER_OF_THREAD] = new Thread(new WorkerThread(WorkerThread.MODE_ENCRYPT,
-//                    bufferOut[a], bufferIn[a], key1, key2, a, i));
-//            worker[a % NUMBER_OF_THREAD].start();
-//            if (a % NUMBER_OF_THREAD == NUMBER_OF_THREAD - 1) {
-//                for (int aa = 0; aa < NUMBER_OF_THREAD; aa++) {
-//                    if (worker[aa] != null) {
-//                        worker[aa].join(0);
-//                    }
-//                }
-//            }
-//        }
-        
+        System.out.println("---Start a thread, perform a long task");
+        // make new thread for execute per block encryption
+        Thread[] worker = new Thread[NUMBER_OF_THREAD];
+        // we will start encryption from first until before last two block
+        // there is a stealing for last two block if the mod is not zero
+        for (int a = 0; a <= m - 2; a++) {
+            worker[a % NUMBER_OF_THREAD] = new Thread(new LongTask(LongTask.MODE_ENCRYPT,
+                    buffOut[a], buffIn[a], key1, key2, a, i));
+            worker[a % NUMBER_OF_THREAD].start();
+            if (a % NUMBER_OF_THREAD == NUMBER_OF_THREAD - 1) {
+                for (int aa = 0; aa < NUMBER_OF_THREAD; aa++) {
+                    if (worker[aa] != null) {
+                        worker[aa].join(0);
+                    }
+                }
+            }
+        }
+        for (int a = 0; a < NUMBER_OF_THREAD; a++) {
+            if (worker[a] != null) {
+                worker[a].join(0);
+            }
+        }
+        System.out.println("---finish all thread, block - 2 successfull encrypted");
+        if (b == 0) {
+            System.out.println("---file size is divisible by block size");
+            System.out.println("---continue encryption for last two block");
+            perBlockEncrypt(buffOut[m - 1], buffIn[m - 1], key1, key2, m - 1, i);
+            buffOut[m] = new byte[0];
+        } else {
+            System.out.println("---file size is not divisible by block size");
+            System.out.println("---Perform a ciphertext stealing");
+            byte[] cc = new byte[BLOCK_SIZE];
+            
+            perBlockEncrypt(cc, buffIn[m - 1], key1, key2, m - 1, i);
+            System.arraycopy(cc, 0, buffOut[m], 0, b);
+            byte[] cp = new byte[16 - b];
+            int ctr = 16 - b;
+            int xx = cc.length - 1;
+            int yy = cp.length - 1;
+            while (ctr-- != 0) {
+                cp[yy--] = cc[xx--];
+            }
+            byte[] pp = new byte[16];
+            for (int a = 0; a < b; a++) {
+                pp[a] = buffIn[m][a];
+            }
+            for (int a = b; a < pp.length; a++) {
+                pp[a] = cp[a - b];
+            }
+            perBlockEncrypt(buffOut[m - 1], pp, key1, key2, m, i);
+        }
+        for (int a = 0; a < buffOut.length; a++) {
+            fout.write(buffOut[a]);
+        }
 
     }
     private void buildTable(byte[] a, int numBlock) {
@@ -109,6 +149,82 @@ class XTS_AES {
             multiplyDP[i][0] = (byte) ((2 * (multiplyDP[i-1][0] % 128)) ^ (135 * (multiplyDP[i-1][15] / 128)));
             for (int k = 1; k < 16; k++) {
                 multiplyDP[i][k] = (byte) ((2 * (multiplyDP[i-1][k] % 128)) ^ (multiplyDP[i-1][k - 1] / 128));
+            }
+        }
+    }
+    public void perBlockEncrypt(byte[] ret, byte[] plain, byte[] key1,
+            byte[] key2, int j, byte[] i) {
+        AES aes = new AES();
+//        aes.setKey(key2);
+//        if(nonceDP==null) nonceDP = aes.encrypt(i);
+        byte[] t = multiplyByPowJ(nonceDP, j);
+        byte[] pp = new byte[BLOCK_SIZE];
+        for (int a = 0; a < pp.length; a++) {
+            pp[a] = (byte) (plain[a] ^ t[a]);
+        }
+        aes = new AES();
+        aes.setKey(key1);
+        byte[] cc = aes.encrypt(pp);
+        for (int a = 0; a < ret.length; a++) {
+            ret[a] = (byte) (cc[a] ^ t[a]);
+        }
+    }
+     public void perBlockDecrypt(byte[] ret, byte[] cipher, byte[] key1,
+            byte[] key2, int j, byte[] i) {
+        AES aes = new AES();
+//        aes.setKey(key2);
+//        if(nonceDP==null) nonceDP = aes.encrypt(i);
+        byte[] t = multiplyByPowJ(nonceDP, j);
+        byte[] cc = new byte[BLOCK_SIZE];
+        for (int a = 0; a < cc.length; a++) {
+            cc[a] = (byte) (cipher[a] ^ t[a]);
+        }
+        aes = new AES();
+        aes.setKey(key1);
+        byte[] pp = aes.decrypt(cc);
+        for (int a = 0; a < ret.length; a++) {
+            ret[a] = (byte) (pp[a] ^ t[a]);
+        }
+    }
+    public byte[] multiplyByPowJ(byte[] a, int j) {
+        return multiplyDP[j];
+    }
+    class LongTask implements Runnable {
+
+        /**
+         * variabel-variabel yang digunakan
+         */
+        public static final int MODE_ENCRYPT = 0;
+        public static final int MODE_DECRYPT = 1;
+        private int mode;
+        private byte[] dest;
+        private byte[] source;
+        private byte[] key1;
+        private byte[] key2;
+        private int j;
+        private byte[] i;
+
+        // Constructor
+        public LongTask(int mode, byte[] dest, byte[] source, byte[] key1,
+                byte[] key2, int j, byte[] i) {
+            this.mode = mode;
+            this.dest = dest;
+            this.source = source;
+            this.key1 = key1;
+            this.key2 = key2;
+            this.j = j;
+            this.i = i;
+        }
+
+        @Override
+        public void run() {
+            switch (this.mode) {
+                case MODE_ENCRYPT:
+                    perBlockEncrypt(dest, source, key1, key2, j, i);
+                    break;
+                case MODE_DECRYPT:
+                    perBlockDecrypt(dest, source, key1, key2, j, i);
+                    break;
             }
         }
     }
