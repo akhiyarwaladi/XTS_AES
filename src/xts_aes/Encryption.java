@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -79,9 +80,19 @@ public class Encryption extends javax.swing.JFrame {
             }
         });
 
+        plainFileTF.setForeground(new java.awt.Color(153, 153, 153));
+        plainFileTF.setText("plain file path");
         plainFileTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 plainFileTFActionPerformed(evt);
+            }
+        });
+
+        keyFileTF.setForeground(new java.awt.Color(153, 153, 153));
+        keyFileTF.setText("key file path");
+        keyFileTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keyFileTFActionPerformed(evt);
             }
         });
 
@@ -111,18 +122,19 @@ public class Encryption extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(73, 73, 73)
+                        .addGap(127, 127, 127)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(plainFileTF, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(keyFileTF, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel1)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(keyFileTF, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(plainFileTF, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel2))
-                        .addGap(29, 29, 29)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(keyFileButton)
-                            .addComponent(plainFileButton)))
+                        .addGap(32, 32, 32)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(plainFileButton)
+                            .addComponent(keyFileButton)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(284, 284, 284)
+                        .addGap(339, 339, 339)
                         .addComponent(encryptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -130,21 +142,21 @@ public class Encryption extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(48, 48, 48)
+                .addGap(53, 53, 53)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(plainFileTF, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(plainFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(39, 39, 39)
+                .addGap(44, 44, 44)
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(keyFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(keyFileTF, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(55, 55, 55)
+                .addGap(62, 62, 62)
                 .addComponent(encryptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(115, Short.MAX_VALUE))
+                .addContainerGap(108, Short.MAX_VALUE))
         );
 
         pack();
@@ -167,8 +179,20 @@ public class Encryption extends javax.swing.JFrame {
 
     private void encryptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptButtonActionPerformed
         // TODO add your handling code here:
+        
+        if(plainFileTF.getText().equals("plain file path")){
+            msgbox("plainFileTextField empty!");
+            plainFileTF.requestFocusInWindow();
+            return;
+        }
+        if(keyFileTF.getText().equals("key file path")){
+            msgbox("keyFileTextField empty!");
+            keyFileTF.requestFocusInWindow();
+            return;
+        }
+        
         System.out.println("Encryption Start!");
-
+        msgbox("Encryption Start!");
         //targetField = "D:/LMS/mik/cis/tugas/XTS_AES/src/xts_aes/cobaMatrixDecrypt.py";
         sourceName = sourceField;
         keyName = keyField;
@@ -189,6 +213,7 @@ public class Encryption extends javax.swing.JFrame {
            
             XTS_AES aes = new XTS_AES(sourceName, keyName, targetName);
             aes.startEncryption(sourceName, keyName, targetName);
+            msgbox("Encryption Done!");
             
         }catch(Exception ex) {
             Logger.getLogger(Encrypt.class.getName()).log(Level.SEVERE, null, ex);
@@ -213,6 +238,10 @@ public class Encryption extends javax.swing.JFrame {
             keyField = selectedFile.getAbsolutePath();
         }
     }//GEN-LAST:event_keyFileButtonActionPerformed
+
+    private void keyFileTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyFileTFActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_keyFileTFActionPerformed
 
     /**
      * @param args the command line arguments
@@ -247,6 +276,9 @@ public class Encryption extends javax.swing.JFrame {
                 new Encryption().setVisible(true);
             }
         });
+    }
+    private void msgbox(String s){
+        JOptionPane.showMessageDialog(null, s);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

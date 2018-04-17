@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -76,12 +77,16 @@ public class Decryption extends javax.swing.JFrame {
 
         jLabel2.setText("Key File");
 
+        cipherFileTF.setForeground(new java.awt.Color(153, 153, 153));
+        cipherFileTF.setText("cipher file path");
         cipherFileTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cipherFileTFActionPerformed(evt);
             }
         });
 
+        keyFileTF.setForeground(new java.awt.Color(153, 153, 153));
+        keyFileTF.setText("key file path");
         keyFileTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyFileTFActionPerformed(evt);
@@ -166,7 +171,16 @@ public class Decryption extends javax.swing.JFrame {
 
     private void decryptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decryptButtonActionPerformed
         // TODO add your handling code here:
-        
+        if(cipherFileTF.getText().equals("cipher file path")){
+            msgbox("cipherFileTextField empty!");
+            cipherFileTF.requestFocusInWindow();
+            return;
+        }
+        if(keyFileTF.getText().equals("key file path")){
+            msgbox("keyFileTextField empty!");
+            keyFileTF.requestFocusInWindow();
+            return;
+        }
         System.out.println("Decryption Start!");
         
         sourceName = sourceField;
@@ -258,6 +272,9 @@ public class Decryption extends javax.swing.JFrame {
                 new Decryption().setVisible(true);
             }
         });
+    }
+    private void msgbox(String s){
+        JOptionPane.showMessageDialog(null, s);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

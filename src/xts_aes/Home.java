@@ -75,7 +75,7 @@ public class Home extends javax.swing.JFrame {
 
         jLabel13.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel13.setText("School Management");
+        jLabel13.setText("Encrypt - Decrypt");
         jPanel2.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 120, -1, -1));
 
         exit.setFont(new java.awt.Font("Verdana", 0, 18)); // NOI18N
@@ -90,7 +90,7 @@ public class Home extends javax.swing.JFrame {
 
         jLabel15.setFont(new java.awt.Font("Verdana", 1, 24)); // NOI18N
         jLabel15.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel15.setText("KeepToo");
+        jLabel15.setText("XTS-AES");
         jPanel2.add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 80, -1, -1));
 
         jTextField1.setBackground(new java.awt.Color(45, 118, 232));
