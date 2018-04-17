@@ -54,7 +54,100 @@ class XTS_AES {
         System.out.println("Encryption Done!");
     }
     
+    public void Encrypt(RandomAccessFile fin, RandomAccessFile fout,
+            byte[] key1, byte[] key2, byte[] i)throws Exception {
+        
+        //define size of array for each block by file input length
+        long fileSize = fin.length();
+        System.out.println("finlength\t= " + fileSize);
+        int m = (int) (fileSize / BLOCK_SIZE);
+        int b = (int) (fileSize % BLOCK_SIZE);
+        System.out.println("m(panjang array perblok)\t= " + m);
+        System.out.println("b(sisa / kosong)\t= " + b);
+        
+        // define a buff for input and output
+        // typically a disk sector, consists of a sequence of plaintext block p0, p1, ..., pm
+        // so we need to add value m with one
+        byte[][] buffIn = new byte[m + 1][16];
+        buffIn[m] = new byte[b];
+
+        // read file input until length of buffer input
+        for (int arr = 0; arr < buffIn.length; arr++) {
+            // store each byte of input in buffer input
+            fin.read(buffIn[arr]);
+        }
+        
+        byte[][] buffOut = new byte[m + 1][16];
+        buffOut[m] = new byte[b];
+        
+        // set aes encryption with key2
+        AES aes = new AES();
+        aes.setKey(key2);
+        // if noncedp is null we set noncedp by encryption of nonce
+        if(nonceDP==null) nonceDP = aes.encrypt(i);
+        //
+        buildTable(nonceDP, m + 1);
+        
+        System.out.println("---Start a thread, perform a long task");
+        // make new thread for execute per block encryption
+        Thread[] worker = new Thread[NUMBER_OF_THREAD];
+        // we will start encryption from first until before last two block
+        // there is a stealing for last two block if the mod is not zero
+        for (int a = 0; a <= m - 2; a++) {
+            worker[a % NUMBER_OF_THREAD] = new Thread(new LongTask(LongTask.MODE_ENCRYPT,
+                    buffOut[a], buffIn[a], key1, key2, a, i));
+            worker[a % NUMBER_OF_THREAD].start();
+            if (a % NUMBER_OF_THREAD == NUMBER_OF_THREAD - 1) {
+                for (int aa = 0; aa < NUMBER_OF_THREAD; aa++) {
+                    if (worker[aa] != null) {
+                        worker[aa].join(0);
+                    }
+                }
+            }
+        }
+        for (int a = 0; a < NUMBER_OF_THREAD; a++) {
+            if (worker[a] != null) {
+                worker[a].join(0);
+            }
+        }
+        System.out.println("---finish all thread, block - 2 successfull encrypted");
+        if (b == 0) {
+            System.out.println("---file size is divisible by block size");
+            System.out.println("---continue encryption for last two block");
+            perBlockEncrypt(buffOut[m - 1], buffIn[m - 1], key1, key2, m - 1, i);
+            buffOut[m] = new byte[0];
+        } else {
+            System.out.println("---file size is not divisible by block size");
+            System.out.println("---Perform a ciphertext stealing");
+            byte[] cc = new byte[BLOCK_SIZE];
+            
+            perBlockEncrypt(cc, buffIn[m - 1], key1, key2, m - 1, i);
+            System.arraycopy(cc, 0, buffOut[m], 0, b);
+            byte[] cp = new byte[16 - b];
+            int ctr = 16 - b;
+            int xx = cc.length - 1;
+            int yy = cp.length - 1;
+            while (ctr-- != 0) {
+                cp[yy--] = cc[xx--];
+            }
+            byte[] pp = new byte[16];
+            for (int a = 0; a < b; a++) {
+                pp[a] = buffIn[m][a];
+            }
+            for (int a = b; a < pp.length; a++) {
+                pp[a] = cp[a - b];
+            }
+            perBlockEncrypt(buffOut[m - 1], pp, key1, key2, m, i);
+        }
+        for (int a = 0; a < buffOut.length; a++) {
+            fout.write(buffOut[a]);
+        }
+
+    }
     public void startDecryption(String cipher, String key, String plain) throws Exception {
+        
+        RandomAccessFile raf1 = new RandomAccessFile(plain, "r");
+        RandomAccessFile raf2 = new RandomAccessFile(cipher, "rw");        
         BufferedReader br = new BufferedReader(new FileReader(key));
         String baca = br.readLine();
         br.close();
@@ -63,8 +156,8 @@ class XTS_AES {
         System.out.println("key1\t= " + key1);
         System.out.println("key2\t= " + key2);
         System.out.println("tweak\t= " + Util.toHEX1(nonce));
-        RandomAccessFile raf1 = new RandomAccessFile(plain, "r");
-        RandomAccessFile raf2 = new RandomAccessFile(cipher, "rw");
+        
+
         //pemanggilan method XTSAESDecrypt untuk melakukan dekripsi data
         Decrypt(raf1, raf2, Util.hex2byte(key1), Util.hex2byte(key2), nonce);
         raf1.close();
@@ -139,94 +232,6 @@ class XTS_AES {
         }
     }
 
-    public void Encrypt(RandomAccessFile fin, RandomAccessFile fout,
-            byte[] key1, byte[] key2, byte[] i)throws Exception {
-        
-        //define size of array for each block by file input length
-        long fileSize = fin.length();
-        System.out.println("finlength\t= " + fileSize);
-        int m = (int) (fileSize / BLOCK_SIZE);
-        int b = (int) (fileSize % BLOCK_SIZE);
-        System.out.println("m(panjang array perblok)\t= " + m);
-        System.out.println("b(sisa / kosong)\t= " + b);
-        
-        // define a buff for input and output
-        // typically a disk sector, consists of a sequence of plaintext block p0, p1, ..., pm
-        // so we need to add value m with one
-        byte[][] buffIn = new byte[m + 1][16];
-        buffIn[m] = new byte[b];
-        byte[][] buffOut = new byte[m + 1][16];
-        buffOut[m] = new byte[b];
-
-        // read file input until length of buffer input
-        for (int arr = 0; arr < buffIn.length; arr++) {
-            // store each byte of input in buffer input
-            fin.read(buffIn[arr]);
-        }
-        // set aes encryption with key2
-        AES aes = new AES();
-        aes.setKey(key2);
-        // if noncedp is null we set noncedp by encryption of nonce
-        if(nonceDP==null) nonceDP = aes.encrypt(i);
-        //
-        buildTable(nonceDP, m + 1);
-        
-        System.out.println("---Start a thread, perform a long task");
-        // make new thread for execute per block encryption
-        Thread[] worker = new Thread[NUMBER_OF_THREAD];
-        // we will start encryption from first until before last two block
-        // there is a stealing for last two block if the mod is not zero
-        for (int a = 0; a <= m - 2; a++) {
-            worker[a % NUMBER_OF_THREAD] = new Thread(new LongTask(LongTask.MODE_ENCRYPT,
-                    buffOut[a], buffIn[a], key1, key2, a, i));
-            worker[a % NUMBER_OF_THREAD].start();
-            if (a % NUMBER_OF_THREAD == NUMBER_OF_THREAD - 1) {
-                for (int aa = 0; aa < NUMBER_OF_THREAD; aa++) {
-                    if (worker[aa] != null) {
-                        worker[aa].join(0);
-                    }
-                }
-            }
-        }
-        for (int a = 0; a < NUMBER_OF_THREAD; a++) {
-            if (worker[a] != null) {
-                worker[a].join(0);
-            }
-        }
-        System.out.println("---finish all thread, block - 2 successfull encrypted");
-        if (b == 0) {
-            System.out.println("---file size is divisible by block size");
-            System.out.println("---continue encryption for last two block");
-            perBlockEncrypt(buffOut[m - 1], buffIn[m - 1], key1, key2, m - 1, i);
-            buffOut[m] = new byte[0];
-        } else {
-            System.out.println("---file size is not divisible by block size");
-            System.out.println("---Perform a ciphertext stealing");
-            byte[] cc = new byte[BLOCK_SIZE];
-            
-            perBlockEncrypt(cc, buffIn[m - 1], key1, key2, m - 1, i);
-            System.arraycopy(cc, 0, buffOut[m], 0, b);
-            byte[] cp = new byte[16 - b];
-            int ctr = 16 - b;
-            int xx = cc.length - 1;
-            int yy = cp.length - 1;
-            while (ctr-- != 0) {
-                cp[yy--] = cc[xx--];
-            }
-            byte[] pp = new byte[16];
-            for (int a = 0; a < b; a++) {
-                pp[a] = buffIn[m][a];
-            }
-            for (int a = b; a < pp.length; a++) {
-                pp[a] = cp[a - b];
-            }
-            perBlockEncrypt(buffOut[m - 1], pp, key1, key2, m, i);
-        }
-        for (int a = 0; a < buffOut.length; a++) {
-            fout.write(buffOut[a]);
-        }
-
-    }
     private void buildTable(byte[] a, int numBlock) {
         multiplyDP = new byte[numBlock][BLOCK_SIZE];
         multiplyDP[0] = a;

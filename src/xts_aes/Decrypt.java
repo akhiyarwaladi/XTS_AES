@@ -26,7 +26,7 @@ public class Decrypt extends javax.swing.JPanel {
         System.out.println("Decryption Start!");
         String sourceField, keyField, targetField;
         String sourceName, keyName, targetName;
-        sourceField = "D:/data_enkripsi/decTreeAdult.encrypted";
+        sourceField = "D:/data_enkripsi/cobaMatrix.encrypted";
         keyField = "D:/data_enkripsi/key.txt";
         //targetField = "D:/LMS/mik/cis/tugas/XTS_AES/src/xts_aes/cobaMatrixDecrypt.py";
         sourceName = sourceField;
@@ -41,14 +41,14 @@ public class Decrypt extends javax.swing.JPanel {
             
             System.out.println("Saved in "+targetName);
             
-            targetField = targetName;
+            
             // Use relative path for Unix systems
-            File f = new File(targetField);
+            File f = new File(targetName);
             f.getParentFile().mkdirs(); 
             f.createNewFile();
             
             XTS_AES aes = new XTS_AES(sourceName, keyName, targetName);
-            aes.startDecryption(sourceName, keyName, targetName);
+            aes.startDecryption(targetName, keyName, sourceName);
             
         }catch(Exception ex) {
             Logger.getLogger(Decrypt.class.getName()).log(Level.SEVERE, null, ex);

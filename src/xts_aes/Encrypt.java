@@ -47,7 +47,7 @@ public class Encrypt extends javax.swing.JPanel {
         System.out.println("Encryption Start!");
         String sourceField, keyField, targetField;
         String sourceName, keyName, targetName;
-        sourceField = "D:/data_enkripsi/decTreeAdult.png";
+        sourceField = "D:/data_enkripsi/cobaMatrix.py";
         keyField = "D:/data_enkripsi/key.txt";
         //targetField = "D:/LMS/mik/cis/tugas/XTS_AES/src/xts_aes/cobaMatrixDecrypt.py";
         sourceName = sourceField;
