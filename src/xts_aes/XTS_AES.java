@@ -170,13 +170,13 @@ class XTS_AES {
         long fileSize = in.length();
         int m = (int) (fileSize / BLOCK_SIZE);
         int b = (int) (fileSize % BLOCK_SIZE);
-        byte[][] bufferIn = new byte[m + 1][16];
-        bufferIn[m] = new byte[b];
-        for (int a = 0; a < bufferIn.length; a++) {
-            in.read(bufferIn[a]);
+        byte[][] buffIn = new byte[m + 1][16];
+        buffIn[m] = new byte[b];
+        for (int a = 0; a < buffIn.length; a++) {
+            in.read(buffIn[a]);
         }
-        byte[][] bufferOut = new byte[m + 1][16];
-        bufferOut[m] = new byte[b];
+        byte[][] buffOut = new byte[m + 1][16];
+        buffOut[m] = new byte[b];
         AES aes = new AES();
         aes.setKey(key2);
         if(nonceDP==null) nonceDP = aes.encrypt(i);
@@ -185,7 +185,7 @@ class XTS_AES {
         Thread[] worker = new Thread[NUMBER_OF_THREAD];
         for (int a = 0; a <= m - 2; a++) {
             worker[a % NUMBER_OF_THREAD] = new Thread(new LongTask(LongTask.MODE_DECRYPT,
-                    bufferOut[a], bufferIn[a], key1, key2, a, i));
+                    buffOut[a], buffIn[a], key1, key2, a, i));
             worker[a % NUMBER_OF_THREAD].start();
             if (a % NUMBER_OF_THREAD == NUMBER_OF_THREAD - 1) {
                 for (int aa = 0; aa < NUMBER_OF_THREAD; aa++) {
@@ -204,13 +204,13 @@ class XTS_AES {
         System.out.println("---finish all thread");
         if (b == 0) {
             System.out.println("---file size is divisible by block size");
-            perBlockDecrypt(bufferOut[m - 1], bufferIn[m - 1], key1, key2, m - 1, i);
-            bufferOut[m] = new byte[0];
+            perBlockDecrypt(buffOut[m - 1], buffIn[m - 1], key1, key2, m - 1, i);
+            buffOut[m] = new byte[0];
         } else {
             System.out.println("---file size is not divisible by block size");
             byte[] cc = new byte[BLOCK_SIZE];
-            perBlockDecrypt(cc, bufferIn[m - 1], key1, key2, m, i);
-            System.arraycopy(cc, 0, bufferOut[m], 0, b);
+            perBlockDecrypt(cc, buffIn[m - 1], key1, key2, m, i);
+            System.arraycopy(cc, 0, buffOut[m], 0, b);
             byte[] cp = new byte[16 - b];
             int ctr = 16 - b;
             int xx = cc.length - 1;
@@ -220,15 +220,15 @@ class XTS_AES {
             }
             byte[] pp = new byte[16];
             for (int a = 0; a < b; a++) {
-                pp[a] = bufferIn[m][a];
+                pp[a] = buffIn[m][a];
             }
             for (int a = b; a < pp.length; a++) {
                 pp[a] = cp[a - b];
             }
-            perBlockDecrypt(bufferOut[m - 1], pp, key1, key2, m - 1, i);
+            perBlockDecrypt(buffOut[m - 1], pp, key1, key2, m - 1, i);
         }
-        for (int a = 0; a < bufferOut.length; a++) {
-            out.write(bufferOut[a]);
+        for (int a = 0; a < buffOut.length; a++) {
+            out.write(buffOut[a]);
         }
     }
 

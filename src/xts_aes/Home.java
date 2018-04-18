@@ -94,9 +94,6 @@ public class Home extends javax.swing.JFrame {
         jLabel14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/xts_aes/images/navigation.png"))); // NOI18N
         jPanel2.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 50, 90, 100));
 
-        jLabel16.setIcon(new javax.swing.ImageIcon(getClass().getResource("/xts_aes/images/search_20px_1.png"))); // NOI18N
-        jPanel2.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 160, -1, -1));
-
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 860, 240));
 
         jPanel4.setBackground(java.awt.SystemColor.controlHighlight);

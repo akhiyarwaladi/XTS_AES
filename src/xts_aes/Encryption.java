@@ -5,9 +5,11 @@
  */
 package xts_aes;
 
+import java.awt.Dialog;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -192,7 +194,19 @@ public class Encryption extends javax.swing.JFrame {
         }
         
         System.out.println("Encryption Start!");
-        msgbox("Encryption Start!");
+        msgbox("Encryption Start!, press ok to start encrypt");
+        
+//        URL url = Encryption.class.getResource("/xts_aes/images/circle-loading-gif.gif");
+//        Icon icon = new ImageIcon(url);
+//        JLabel label = new JLabel(icon);
+//
+//        JFrame lc = new JFrame("Animation");
+//        lc.getContentPane().add(label);
+//        lc.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        lc.pack();
+//        lc.setLocationRelativeTo(null);
+//        lc.setVisible(true);
+
         //targetField = "D:/LMS/mik/cis/tugas/XTS_AES/src/xts_aes/cobaMatrixDecrypt.py";
         sourceName = sourceField;
         keyName = keyField;
@@ -213,6 +227,7 @@ public class Encryption extends javax.swing.JFrame {
            
             XTS_AES aes = new XTS_AES(sourceName, keyName, targetName);
             aes.startEncryption(sourceName, keyName, targetName);
+//            lc.setVisible(false);
             msgbox("Encryption Done!");
             
         }catch(Exception ex) {
@@ -278,7 +293,14 @@ public class Encryption extends javax.swing.JFrame {
         });
     }
     private void msgbox(String s){
-        JOptionPane.showMessageDialog(null, s);
+        
+        JOptionPane op = new JOptionPane(s, JOptionPane.INFORMATION_MESSAGE);
+        JDialog dialog = op.createDialog("Information");
+        dialog.setAlwaysOnTop(true);
+        //dialog.setModalityType(Dialog.ModalityType.MODELESS);
+        dialog.setModal(true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);      
+        dialog.setVisible(true);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
