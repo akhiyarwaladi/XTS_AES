@@ -8,6 +8,7 @@ package xts_aes;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -182,7 +183,7 @@ public class Decryption extends javax.swing.JFrame {
             return;
         }
         System.out.println("Decryption Start!");
-        
+        msgbox("Decryption Start!, press ok to start encrypt");
         sourceName = sourceField;
         keyName = keyField;
         
@@ -202,6 +203,7 @@ public class Decryption extends javax.swing.JFrame {
             
             XTS_AES aes = new XTS_AES(sourceName, keyName, targetName);
             aes.startDecryption(targetName, keyName, sourceName);
+            msgbox("Decryption Done!");
             
         }catch(Exception ex) {
             Logger.getLogger(Decrypt.class.getName()).log(Level.SEVERE, null, ex);
@@ -274,7 +276,13 @@ public class Decryption extends javax.swing.JFrame {
         });
     }
     private void msgbox(String s){
-        JOptionPane.showMessageDialog(null, s);
+        JOptionPane op = new JOptionPane(s, JOptionPane.INFORMATION_MESSAGE);
+        JDialog dialog = op.createDialog("Information");
+        dialog.setAlwaysOnTop(true);
+        //dialog.setModalityType(Dialog.ModalityType.MODELESS);
+        dialog.setModal(true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);      
+        dialog.setVisible(true);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
